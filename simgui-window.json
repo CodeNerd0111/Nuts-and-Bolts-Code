@@ -10,8 +10,8 @@
       "style": "0",
       "userScale": "2",
       "width": "1366",
-      "xpos": "-186",
-      "ypos": "687"
+      "xpos": "21",
+      "ypos": "31"
     }
   },
   "Table": {
@@ -23,39 +23,69 @@
     }
   },
   "Window": {
+    "###/FMSInfo": {
+      "Collapsed": "0",
+      "Pos": "450,360",
+      "Size": "181,167"
+    },
+    "###/SmartDashboard/Field": {
+      "Collapsed": "0",
+      "Pos": "200,66",
+      "Size": "400,200"
+    },
     "###FMS": {
       "Collapsed": "0",
-      "Pos": "149,22",
-      "Size": "283,140"
+      "Pos": "57,405",
+      "Size": "169,184"
     },
     "###Joysticks": {
       "Collapsed": "0",
-      "Pos": "250,465",
-      "Size": "796,73"
+      "Pos": "309,336",
+      "Size": "796,155"
+    },
+    "###Keyboard 0 Settings": {
+      "Collapsed": "0",
+      "Pos": "10,50",
+      "Size": "300,560"
+    },
+    "###Keyboard 1 Settings": {
+      "Collapsed": "0",
+      "Pos": "320,50",
+      "Size": "300,560"
     },
     "###NetworkTables": {
       "Collapsed": "0",
-      "Pos": "250,277",
-      "Size": "750,185"
+      "Pos": "323,69",
+      "Size": "750,632"
     },
     "###NetworkTables Info": {
       "Collapsed": "0",
-      "Pos": "378,64",
-      "Size": "750,145"
+      "Pos": "430,198",
+      "Size": "750,457"
     },
     "###Other Devices": {
       "Collapsed": "0",
       "Pos": "1025,20",
-      "Size": "250,695"
+      "Size": "250,657"
+    },
+    "###PWM Outputs": {
+      "Collapsed": "0",
+      "Pos": "910,20",
+      "Size": "110,81"
+    },
+    "###Plot <0>": {
+      "Collapsed": "0",
+      "Pos": "60,60",
+      "Size": "700,400"
     },
     "###RoboRIO": {
       "Collapsed": "0",
-      "Pos": "298,103",
+      "Pos": "5,125",
       "Size": "119,146"
     },
     "###System Joysticks": {
       "Collapsed": "0",
-      "Pos": "8,282",
+      "Pos": "239,293",
       "Size": "192,218"
     },
     "###Timing": {

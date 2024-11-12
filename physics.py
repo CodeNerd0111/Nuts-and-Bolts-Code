@@ -24,6 +24,15 @@ import typing
 if typing.TYPE_CHECKING:
     from robot import MyRobot
 
+'''
+TODO: Modify the tank model parameters to match the physical model
+TODO: Configure the second inputs to allow for z rotation
+
+'''
+
+
+
+
 
 class PhysicsEngine:
     """
@@ -41,15 +50,15 @@ class PhysicsEngine:
 
         print("TODO: modify simulation for my robot")
 
-        """
+        
         # Change these parameters to fit your robot!
 
         # Motors
-        self.l_motor = wpilib.simulation.PWMSim(robot.l_motor)
-        self.r_motor = wpilib.simulation.PWMSim(robot.r_motor)
-
+        self.l_motor = wpilib.simulation.PWMSim(robot.leftDrive)
+        self.r_motor = wpilib.simulation.PWMSim(robot.rightDrive)
+        
         bumper_width = 3.25 * units.inch
-
+        
         self.drivetrain = tankmodel.TankModel.theory(
             motor_cfgs.MOTOR_CFG_CIM,           # motor configuration
             110 * units.lbs,                    # robot mass
@@ -60,7 +69,7 @@ class PhysicsEngine:
             32 * units.inch + bumper_width * 2, # robot length
             6 * units.inch,                     # wheel diameter
         )
-        """
+        
 
     def update_sim(self, now: float, tm_diff: float) -> None:
         """
@@ -72,12 +81,10 @@ class PhysicsEngine:
                         time that this function was called
         """
 
-        """
+        
         # Simulate the drivetrain
         l_motor = self.l_motor.getSpeed()
         r_motor = self.r_motor.getSpeed()
 
         transform = self.drivetrain.calculate(l_motor, r_motor, tm_diff)
         pose = self.physics_controller.move_robot(transform)
-        """
-
