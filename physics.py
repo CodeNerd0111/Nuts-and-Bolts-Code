@@ -26,7 +26,6 @@ if typing.TYPE_CHECKING:
 
 '''
 TODO: Modify the tank model parameters to match the physical model
-TODO: Configure the second inputs to allow for z rotation
 
 '''
 
@@ -47,8 +46,6 @@ class PhysicsEngine:
         """
 
         self.physics_controller = physics_controller
-
-        print("TODO: modify simulation for my robot")
 
         
         # Change these parameters to fit your robot!
@@ -81,7 +78,7 @@ class PhysicsEngine:
                         time that this function was called
         """
 
-        
+
         # Simulate the drivetrain
         l_motor = self.l_motor.getSpeed()
         r_motor = self.r_motor.getSpeed()

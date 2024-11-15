@@ -54,7 +54,7 @@ class MyRobot(wpilib.TimedRobot):
     def teleopPeriodic(self):
         """This function is called periodically during teleoperated mode."""
         self.robotDrive.arcadeDrive(
-            -self.controller.getLeftY(), -self.controller.getRightX()
+            -self.controller.getLeftY(), -self.controller.getLeftX()
         )
 
     def testInit(self):
