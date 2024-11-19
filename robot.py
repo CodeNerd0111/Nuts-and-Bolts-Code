@@ -1,16 +1,4 @@
 
-
-'''
-
-Hey gang! If anyone sees this just know that I directly copy/pasted this code from the docs.
-I think that we may have to swap the PWM driver for another method, depending on our hardware,
-but I guess I don't really know. This will be our first real commit to the repository too.
-
-'''
-
-
-
-
 import wpilib
 import wpilib.drive
 
@@ -21,8 +9,8 @@ class MyRobot(wpilib.TimedRobot):
         This function is called upon program startup and
         should be used for any initialization code.
         """
-        self.leftDrive = wpilib.PWMSparkMax(0)
-        self.rightDrive = wpilib.PWMSparkMax(1)
+        self.leftDrive = wpilib.PWMSparkMax(4)
+        self.rightDrive = wpilib.PWMSparkMax(5)
         self.robotDrive = wpilib.drive.DifferentialDrive(
             self.leftDrive, self.rightDrive
         )
