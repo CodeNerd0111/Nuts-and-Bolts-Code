@@ -1,7 +1,7 @@
 
 import wpilib
 import wpilib.drive
-
+import rev
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
@@ -9,8 +9,8 @@ class MyRobot(wpilib.TimedRobot):
         This function is called upon program startup and
         should be used for any initialization code.
         """
-        self.leftDrive = wpilib.PWMSparkMax(4)
-        self.rightDrive = wpilib.PWMSparkMax(5)
+        self.leftDrive = rev.CANSparkMax(21, rev.CANSparkLowLevel.MotorType.kBrushed)
+        self.rightDrive = rev.CANSparkMax(22, rev.CANSparkLowLevel.MotorType.kBrushed)
         self.robotDrive = wpilib.drive.DifferentialDrive(
             self.leftDrive, self.rightDrive
         )
