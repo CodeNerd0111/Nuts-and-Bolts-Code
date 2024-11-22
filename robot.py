@@ -14,7 +14,8 @@ class MyRobot(wpilib.TimedRobot):
         self.robotDrive = wpilib.drive.DifferentialDrive(
             self.leftDrive, self.rightDrive
         )
-        self.controller = wpilib.XboxController(0)
+        self.controller = wpilib.XboxController(1)
+        self.l_joystick = wpilib.Joystick(0)
         self.timer = wpilib.Timer()
 
         # We need to invert one side of the drivetrain so that positive voltages
@@ -42,7 +43,7 @@ class MyRobot(wpilib.TimedRobot):
     def teleopPeriodic(self):
         """This function is called periodically during teleoperated mode."""
         self.robotDrive.arcadeDrive(
-            -self.controller.getLeftY(), -self.controller.getLeftX()
+            self.l_joystick.getX(), self.l_joystick.getZ()
         )
 
     def testInit(self):
