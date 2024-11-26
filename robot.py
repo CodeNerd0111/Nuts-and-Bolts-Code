@@ -3,6 +3,7 @@ import wpilib
 import wpilib.drive
 import rev
 from wpilib.cameraserver import CameraServer
+import wpiutil
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
@@ -25,6 +26,8 @@ class MyRobot(wpilib.TimedRobot):
         # gearbox is constructed, you might have to invert the left side instead.
         self.rightDrive.setInverted(True)
 
+        self.speed = 1.0
+
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
         self.timer.restart()
@@ -45,7 +48,7 @@ class MyRobot(wpilib.TimedRobot):
     def teleopPeriodic(self):
         """This function is called periodically during teleoperated mode."""
         self.robotDrive.arcadeDrive(
-            self.l_joystick.getX(), self.l_joystick.getZ()
+            self.l_joystick.getX() * self.speed, self.l_joystick.getZ() * self.speed
         )
 
     def testInit(self):
@@ -54,6 +57,8 @@ class MyRobot(wpilib.TimedRobot):
     def testPeriodic(self):
         """This function is called periodically during test mode."""
 
+    def initSendable(self, builder:wpiutil.SendableBuilder):
+        builder.addFloatProperty("Speed", self.speed, self.speed)
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)
