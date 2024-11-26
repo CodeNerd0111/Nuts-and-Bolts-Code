@@ -2,22 +2,24 @@
 import wpilib
 import wpilib.drive
 import rev
+from wpilib.cameraserver import CameraServer
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
-        """
-        This function is called upon program startup and
-        should be used for any initialization code.
-        """
+        """Configures CAN Bus Networks to the SparkMax Motor Controllers"""
         self.leftDrive = rev.CANSparkMax(21, rev.CANSparkLowLevel.MotorType.kBrushed)
         self.rightDrive = rev.CANSparkMax(22, rev.CANSparkLowLevel.MotorType.kBrushed)
         self.robotDrive = wpilib.drive.DifferentialDrive(
             self.leftDrive, self.rightDrive
         )
+
+        """Sets up the controller channels"""
         self.controller = wpilib.XboxController(1)
         self.l_joystick = wpilib.Joystick(0)
         self.timer = wpilib.Timer()
 
+        """Links to the Camera"""
+        CameraServer.launch("vision.py:main")
         # We need to invert one side of the drivetrain so that positive voltages
         # result in both sides moving forward. Depending on how your robot's
         # gearbox is constructed, you might have to invert the left side instead.
