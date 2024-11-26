@@ -28,15 +28,15 @@ def main():
     # Get the UsbCamera from CameraServer
     camera = CS.startAutomaticCapture()
     # Set the resolution
-    camera.setResolution(640, 480)
+    camera.setResolution(1280, 720)
 
     # Get a CvSink. This will capture images from the camera
     cvSink = CS.getVideo()
     # Setup a CvSource. This will send images back to the Dashboard
-    outputStream = CS.putVideo("Rectangle", 640, 480)
+    outputStream = CS.putVideo("Rectangle", 1280, 720)
 
     # Allocating new images is very expensive, always try to preallocate
-    mat = np.zeros(shape=(480, 640, 3), dtype=np.uint8)
+    mat = np.zeros(shape=(720, 1280, 3), dtype=np.uint8)
 
     while True:
         # Tell the CvSink to grab a frame from the camera and put it
