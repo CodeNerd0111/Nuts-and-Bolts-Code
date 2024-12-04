@@ -20,23 +20,24 @@ import cv2
 import numpy as np
 
 from cscore import CameraServer as CS
-
-
 def main():
+    #more qrcode stuff that may not work probably will break cscore somehow
+    camera_id = 0
+    qcd = cv2.QRCodeDetector()
+    cap = cv2.VideoCapture(camera_id)
     CS.enableLogging()
-
     # Get the UsbCamera from CameraServer
     camera = CS.startAutomaticCapture()
     # Set the resolution
-    camera.setResolution(1280, 720)
+    camera.setResolution(640, 480)
 
     # Get a CvSink. This will capture images from the camera
     cvSink = CS.getVideo()
     # Setup a CvSource. This will send images back to the Dashboard
-    outputStream = CS.putVideo("Rectangle", 1280, 720)
+    outputStream = CS.putVideo("Rectangle", 640, 480)
 
     # Allocating new images is very expensive, always try to preallocate
-    mat = np.zeros(shape=(720, 1280, 3), dtype=np.uint8)
+    mat = np.zeros(shape=(480, 640, 3), dtype=np.uint8)
 
     while True:
         # Tell the CvSink to grab a frame from the camera and put it
@@ -48,8 +49,19 @@ def main():
             # skip the rest of the current iteration
             continue
 
-        # Put a rectangle on the image
+        # Put a rectangle on the image and other qrcode stuff that may not work so :p just comment 54-64 if completely breaks camera
         cv2.rectangle(mat, (100, 100), (400, 400), (255, 255, 255), 5)
+        ret, frame = cap.read()
+        if ret:
+            ret_qr, decoded_info, points, _ = qcd.detectAndDecodeMulti(frame)
+            if ret_qr:
+                for s, p in zip(decoded_info, points):
+                    if s:
+                        print(s)
+                        color = (0, 255, 0)
+                    else:
+                        color = (0, 0, 255)
+                    frame = cv2.polylines(frame, [p.astype(int)], True, color, 8)
 
         # Give the output stream a new image to display
         outputStream.putFrame(mat)
