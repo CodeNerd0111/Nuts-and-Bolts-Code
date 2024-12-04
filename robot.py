@@ -16,6 +16,10 @@ class MyRobot(wpilib.TimedRobot):
         self.robotDrive = wpilib.drive.DifferentialDrive(
             self.leftDrive, self.rightDrive
         )
+        # We need to invert one side of the drivetrain so that positive voltages
+        # result in both sides moving forward. Depending on how your robot's
+        # gearbox is constructed, you might have to invert the left side instead.
+        self.rightDrive.setInverted(True)
 
         """Sets up the controller channels"""
         self.controller = wpilib.XboxController(1)
@@ -26,22 +30,23 @@ class MyRobot(wpilib.TimedRobot):
         CameraServer.launch("vision.py:main")
 
         """Links to both sensors"""
-        #!!!!!!!!!!!need to change the 1 and 2 on lines 29 and 30 or 39 tests fail (may be false alarm) when they are assigned as such!!!!!!!!!!!!!!!!!!
-        self.frontSensor = wpilib.Ultrasonic(0, 1)
-        self.backSensor = wpilib.Ultrasonic(2, 3)
-        # We need to invert one side of the drivetrain so that positive voltages
-        # result in both sides moving forward. Depending on how your robot's
-        # gearbox is constructed, you might have to invert the left side instead.
-        self.rightDrive.setInverted(True)
+        # Creates a ping-response Ultrasonic object on DIO 1 and 2 and a second on DIO 3 and 4
+        #!!!!!!!!!!!need to change the 1 and 2 on lines 29 and 30 or 39 tests fail (may be false alarm) when they are assigned as such!!!!!!!!!!!!!!!!!! --- Resolved(?)
+        self.frontSensor = wpilib.Ultrasonic(1, 2)
+        self.backSensor = wpilib.Ultrasonic(3, 4)
 
         self.clearance = 1.0 #in meters
         self.speed = 1.0
-        # Creates a ping-response Ultrasonic object on DIO 1 and 2.
-        self.rangeFinder = wpilib.Ultrasonic(1, 2)
+        
 
         # Add the ultrasonic to the "Sensors" tab of the dashboard
         # Data will update automatically
-        Shuffleboard.getTab("Sensors").add(self.rangeFinder)
+        Shuffleboard.getTab("Sensors").add(self.frontSensor)
+        Shuffleboard.getTab("Sensors").add(self.backSensor)
+        # Other data to upload to the dashboard under a new Variable Config tab
+        Shuffleboard.getTab("Variable Config").addNumber("Sensor Stop Gap", self.clearance)
+        Shuffleboard.getTab("Variable Config").addNumber("Speed Multiplier", self.speed)
+        
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
         self.timer.restart()
@@ -69,38 +74,32 @@ class MyRobot(wpilib.TimedRobot):
         elif self.backSensor.getRange() < self.clearance and driveVal > 0 and self.frontSensor.isRangeValid():
             driveVal = 0
 
-        self.robotDrive.arcadeDrive(
-            driveVal, turnVal
-        )
+        # Controls moter speeds
+        # driveVal is the translational motion and turnVal is the rotational motion
+        self.robotDrive.arcadeDrive(driveVal, turnVal)
 
-        # We can read the distance in millimeters
-        distanceMillimeters = self.rangeFinder.getRangeMM()
-        # ... or in inches
-        distanceInches = self.rangeFinder.getRangeInches()
-
-        # We can also publish the data itself periodically
-        SmartDashboard.putNumber("Distance[mm]", distanceMillimeters)
-        SmartDashboard.putNumber("Distance[in]", distanceInches)
+        # Publish the data periodically
+        SmartDashboard.putNumber("F_Distance[mm]", distanceMillimeters)
+        SmartDashboard.putNumber("F_Distance[in]", distanceInches)
+        SmartDashboard.putNumber("B_Distance[mm]", backSensor.getRangeMM())
+        SmartDashboard.putNumber("B_Distance[in]", backSensor.getRangeInches())
 
     def testInit(self):
         # By default, the Ultrasonic class polls all ultrasonic sensors every in a round-robin to prevent
         # them from interfering from one another.
         # However, manual polling is also possible -- notes that this disables automatic mode!
-        self.rangeFinder.ping()
+        self.frontSensor.ping()
     def testPeriodic(self):
-        if self.rangeFinder.isRangeValid():
+        if self.frontSensor.isRangeValid():
             # Data is valid, publish it
-            SmartDashboard.putNumber("Distance[mm]", self.rangeFinder.getRangeMM())
-            SmartDashboard.putNumber("Distance[in]", self.rangeFinder.getRangeInches())
+            SmartDashboard.putNumber("F_Distance[mm]", self.frontSensor.getRangeMM())
+            SmartDashboard.putNumber("F_Distance[in]", self.frontSensor.getRangeInches())
 
             # Ping for next measurement
-            self.rangeFinder.ping()
-    def initSendable(self, builder:wpiutil.SendableBuilder):
-        builder.addFloatProperty("Speed", self.speed, self.speed)
-        builder.addFloatProperty("Clearance", self.clearance, self.clearance)
+            self.frontSensor.ping()
     def testExit(self):
         # Enable automatic mode
-        self.rangeFinder.setAutomaticMode(True)
+        self.frontSensor.setAutomaticMode(True)
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)
