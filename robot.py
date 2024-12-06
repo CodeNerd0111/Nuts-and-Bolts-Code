@@ -38,6 +38,10 @@ class MyRobot(wpilib.TimedRobot):
         # Data will update automatically
         Shuffleboard.getTab("Sensors").add(self.frontSensor)
         Shuffleboard.getTab("Sensors").add(self.backSensor)
+
+        # Other data to upload to the dashboard under a new Variable Config tab
+        self.clearance = Shuffleboard.getTab("Variable Config").add(title="Sensor Stop Gap", defaultValue=1.0).getEntry()
+        self.speed = Shuffleboard.getTab("Variable Config").add(title="Speed Multiplier", defaultValue=1.0).getEntry()
         
         # Initilizes gyro object
         self.gyro = wpilib.AnalogGyro(0)
