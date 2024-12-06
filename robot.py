@@ -95,20 +95,24 @@ class MyRobot(wpilib.TimedRobot):
 
         driveVal = -self.l_joystick.getY()
         turnVal = self.l_joystick.getX()
-        if self.backSensor.getRange() < self.clearance.getDouble(1.0) and driveVal < 0 and self.backSensor.isRangeValid():
+        """if self.backSensor.getRange() < self.clearance.getDouble(1.0) and driveVal < 0 and self.backSensor.isRangeValid():
             driveVal = 0
         elif self.backSensor.getRange() < self.clearance.getDouble(1.0) and driveVal > 0 and self.frontSensor.isRangeValid():
-            driveVal = 0
+            driveVal = 0"""
 
         # Controls motor speeds
         # driveVal is the translational motion and turnVal is the rotational motion
         self.robotDrive.arcadeDrive(driveVal, turnVal)
 
-        # Publish the data from both sensors
+        """# Publish the data from both sensors
         SmartDashboard.putNumber("F_Distance[mm]", self.frontSensor.getRangeMM())
         SmartDashboard.putNumber("F_Distance[in]", self.frontSensor.getRangeInches())
         SmartDashboard.putNumber("B_Distance[mm]", self.backSensor.getRangeMM())
-        SmartDashboard.putNumber("B_Distance[in]", self.backSensor.getRangeInches())
+        SmartDashboard.putNumber("B_Distance[in]", self.backSensor.getRangeInches())"""
+
+        # Publish PWM sensor data
+        SmartDashboard.putNumber("Front PWM", self.frontSensor.getPulseTime())
+        SmartDashboard.putNumber("Back PWM", self.backSensor.getPulseTime())
 
         # Publish the data from the gyro
         SmartDashboard.putNumber("Gyro Angle", self.gyro.getAngle())
@@ -119,7 +123,7 @@ class MyRobot(wpilib.TimedRobot):
         # By default, the Ultrasonic class polls all ultrasonic sensors every in a round-robin to prevent
         # them from interfering from one another.
         # However, manual polling is also possible -- notes that this disables automatic mode!
-        self.frontSensor.ping()
+        """self.frontSensor.ping()
     def testPeriodic(self):
         if self.frontSensor.isRangeValid():
             # Data is valid, publish it
@@ -130,7 +134,7 @@ class MyRobot(wpilib.TimedRobot):
             self.frontSensor.ping()
     def testExit(self):
         # Enable automatic mode
-        self.frontSensor.setAutomaticMode(True)
+        self.frontSensor.setAutomaticMode(True)"""
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)
