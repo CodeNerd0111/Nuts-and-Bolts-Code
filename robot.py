@@ -8,11 +8,23 @@ from wpilib import SmartDashboard
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
-        print("Enabled") # Just testing it out seeing if it will output to the command console terminal
+
+        
+        # Initializes device channels
+        self.XboxController_Channel = Shuffleboard.getTab("Device Ports").add(title="Xbox Controller [USB]", defaultValue=1).getEntry()
+        self.l_joystick_Channel = Shuffleboard.getTab("Device Ports").add(title="Left Controller [USB]", defaultValue=0).getEntry()
+        self.leftDrive_Channel = Shuffleboard.getTab("Device Ports").add(title="Left Motor [CAN]", defaultValue=21).getEntry()
+        self.rightDrive_Channel = Shuffleboard.getTab("Device Ports").add(title="Left Controller [CAN]", defaultValue=22).getEntry()
+        self.frontSensor_Channel = Shuffleboard.getTab("Device Ports").add(title="Front Sensor [PWM]", defaultValue=0).getEntry()
+        self.backSensor_Channel = Shuffleboard.getTab("Device Ports").add(title="Back Sensor [PWM]", defaultValue=1).getEntry()
+        self.gyro_Channel = Shuffleboard.getTab("Device Ports").add(title="Gyro [Analog]", defaultValue=0).getEntry()
+
+
+        
         
         # Configures CAN Bus Networks to the SparkMax Motor Controllers
-        self.leftDrive = rev.CANSparkMax(21, rev.CANSparkLowLevel.MotorType.kBrushed)
-        self.rightDrive = rev.CANSparkMax(22, rev.CANSparkLowLevel.MotorType.kBrushed)
+        self.leftDrive = rev.CANSparkMax(self.leftDrive_Channel.getInteger(21), rev.CANSparkLowLevel.MotorType.kBrushed)
+        self.rightDrive = rev.CANSparkMax(self.rightDrive_Channel.getInteger(22), rev.CANSparkLowLevel.MotorType.kBrushed)
         self.robotDrive = wpilib.drive.DifferentialDrive(
             self.leftDrive, self.rightDrive
         )
@@ -21,17 +33,20 @@ class MyRobot(wpilib.TimedRobot):
         # gearbox is constructed, you might have to invert the left side instead.
         self.rightDrive.setInverted(True)
 
+
         # Sets up the controller channels
-        self.controller = wpilib.XboxController(1)
-        self.l_joystick = wpilib.Joystick(0)
+        self.controller = wpilib.XboxController(self.XboxController_Channel.getInteger(1))
+        self.l_joystick = wpilib.Joystick(self.l_joystick_Channel.getInteger(0))
         self.timer = wpilib.Timer()
+
 
         # Links to CameraServer in vision.py
         CameraServer.launch("vision.py:main")
 
-        # Creates a ping-response Ultrasonic object on DIO 1 and 2 and a second on DIO 3 and 4
-        self.frontSensor = wpilib.Ultrasonic(1, 2)
-        self.backSensor = wpilib.Ultrasonic(3, 4)
+
+        # Creates two PWM objects to represent the front and back sensors on specified channels
+        self.frontSensor = wpilib.PWM(self.frontSensor_Channel.getInteger(0))
+        self.backSensor = wpilib.PWM(self.backSensor_Channel.getInteger(1))
         
 
         # Add the ultrasonic to the "Sensors" tab of the dashboard
@@ -50,8 +65,12 @@ class MyRobot(wpilib.TimedRobot):
         self.kVoltsPerDegreePerSecond = Shuffleboard.getTab("Variable Config").add(title="Gyro Sensitivity", defaultValue=0.0128).getEntry()
 
         # Initilizes gyro object
-        self.gyro = wpilib.AnalogGyro(0)
+        self.gyro = wpilib.AnalogGyro(self.gyro_Channel.getInteger(0))
         self.gyro.setSensitivity(self.kVoltsPerDegreePerSecond.getDouble(0.0128))
+
+
+
+        print("Enabled") # Just testing it out seeing if it will output to the command console terminal
 
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
