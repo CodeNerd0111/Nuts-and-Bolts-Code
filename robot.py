@@ -8,8 +8,9 @@ from wpilib import SmartDashboard
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
-        print("Enabled") #just testing it out seeing if it will output to the command consol terminal
-        """Configures CAN Bus Networks to the SparkMax Motor Controllers"""
+        print("Enabled") # Just testing it out seeing if it will output to the command console terminal
+        
+        # Configures CAN Bus Networks to the SparkMax Motor Controllers
         self.leftDrive = rev.CANSparkMax(21, rev.CANSparkLowLevel.MotorType.kBrushed)
         self.rightDrive = rev.CANSparkMax(22, rev.CANSparkLowLevel.MotorType.kBrushed)
         self.robotDrive = wpilib.drive.DifferentialDrive(
@@ -20,17 +21,15 @@ class MyRobot(wpilib.TimedRobot):
         # gearbox is constructed, you might have to invert the left side instead.
         self.rightDrive.setInverted(True)
 
-        """Sets up the controller channels"""
+        # Sets up the controller channels
         self.controller = wpilib.XboxController(1)
         self.l_joystick = wpilib.Joystick(0)
         self.timer = wpilib.Timer()
 
-        """Links to the Camera"""
+        # Links to CameraServer in vision.py
         CameraServer.launch("vision.py:main")
 
-        """Links to both sensors"""
         # Creates a ping-response Ultrasonic object on DIO 1 and 2 and a second on DIO 3 and 4
-        #!!!!!!!!!!!need to change the 1 and 2 on lines 29 and 30 or 39 tests fail (may be false alarm) when they are assigned as such!!!!!!!!!!!!!!!!!! --- Resolved(?)
         self.frontSensor = wpilib.Ultrasonic(1, 2)
         self.backSensor = wpilib.Ultrasonic(3, 4)
         
@@ -39,11 +38,16 @@ class MyRobot(wpilib.TimedRobot):
         # Data will update automatically
         Shuffleboard.getTab("Sensors").add(self.frontSensor)
         Shuffleboard.getTab("Sensors").add(self.backSensor)
+        
+        # Initilizes gyro object
+        self.gyro = wpilib.AnalogGyro(0)
+        self.gyro.setSensitivity(self.kVoltsPerDegreePerSecond.getDouble(0.0128))
 
         # Other data to upload to the dashboard under a new Variable Config tab
         self.clearance = Shuffleboard.getTab("Variable Config").add(title="Sensor Stop Gap", defaultValue=1.0).getEntry()
         self.speed = Shuffleboard.getTab("Variable Config").add(title="Speed Multiplier", defaultValue=1.0).getEntry()
-        
+        self.kVoltsPerDegreePerSecond = Shuffleboard.getTab("Variable Config").add(title="Gyro Sensitivity", defaultValue=0.0128).getEntry()
+
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
         self.timer.restart()
@@ -72,15 +76,20 @@ class MyRobot(wpilib.TimedRobot):
         elif self.backSensor.getRange() < self.clearance.getDouble(1.0) and driveVal > 0 and self.frontSensor.isRangeValid():
             driveVal = 0
 
-        # Controls moter speeds
+        # Controls motor speeds
         # driveVal is the translational motion and turnVal is the rotational motion
         self.robotDrive.arcadeDrive(driveVal, turnVal)
 
-        # Publish the data periodically
+        # Publish the data from both sensors
         SmartDashboard.putNumber("F_Distance[mm]", self.frontSensor.getRangeMM())
         SmartDashboard.putNumber("F_Distance[in]", self.frontSensor.getRangeInches())
         SmartDashboard.putNumber("B_Distance[mm]", self.backSensor.getRangeMM())
         SmartDashboard.putNumber("B_Distance[in]", self.backSensor.getRangeInches())
+
+        # Publish the data from the gyro
+        SmartDashboard.putNumber("Gyro Angle", self.gyro.getAngle())
+        SmartDashboard.putNumber("Gyro Center", self.gyro.getCenter())
+        SmartDashboard.putNumber("Gyro Rate", self.gyro.getRate())
 
     def testInit(self):
         # By default, the Ultrasonic class polls all ultrasonic sensors every in a round-robin to prevent
