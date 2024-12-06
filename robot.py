@@ -3,7 +3,6 @@ import wpilib
 import wpilib.drive
 import rev
 from wpilib.cameraserver import CameraServer
-import wpiutil
 from wpilib.shuffleboard import Shuffleboard
 from wpilib import SmartDashboard
 
@@ -34,18 +33,16 @@ class MyRobot(wpilib.TimedRobot):
         #!!!!!!!!!!!need to change the 1 and 2 on lines 29 and 30 or 39 tests fail (may be false alarm) when they are assigned as such!!!!!!!!!!!!!!!!!! --- Resolved(?)
         self.frontSensor = wpilib.Ultrasonic(1, 2)
         self.backSensor = wpilib.Ultrasonic(3, 4)
-
-        self.clearance = 1.0 #in meters
-        self.speed = 1.0
         
 
         # Add the ultrasonic to the "Sensors" tab of the dashboard
         # Data will update automatically
         Shuffleboard.getTab("Sensors").add(self.frontSensor)
         Shuffleboard.getTab("Sensors").add(self.backSensor)
+
         # Other data to upload to the dashboard under a new Variable Config tab
-        Shuffleboard.getTab("Variable Config").addNumber("Sensor Stop Gap", self.clearance)
-        Shuffleboard.getTab("Variable Config").addNumber("Speed Multiplier", self.speed)
+        self.clearance = Shuffleboard.getTab("Variable Config").add(title="Sensor Stop Gap", defaultValue=1.0).getEntry()
+        self.speed = Shuffleboard.getTab("Variable Config").add(title="Speed Multiplier", defaultValue=1.0).getEntry()
         
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
@@ -67,11 +64,12 @@ class MyRobot(wpilib.TimedRobot):
 
     def teleopPeriodic(self):
         """This function is called periodically during teleoperated mode."""
+
         driveVal = -self.l_joystick.getY()
         turnVal = self.l_joystick.getX()
-        if self.backSensor.getRange() < self.clearance and driveVal < 0 and self.backSensor.isRangeValid():
+        if self.backSensor.getRange() < self.clearance.getDouble(1.0) and driveVal < 0 and self.backSensor.isRangeValid():
             driveVal = 0
-        elif self.backSensor.getRange() < self.clearance and driveVal > 0 and self.frontSensor.isRangeValid():
+        elif self.backSensor.getRange() < self.clearance.getDouble(1.0) and driveVal > 0 and self.frontSensor.isRangeValid():
             driveVal = 0
 
         # Controls moter speeds
@@ -79,10 +77,10 @@ class MyRobot(wpilib.TimedRobot):
         self.robotDrive.arcadeDrive(driveVal, turnVal)
 
         # Publish the data periodically
-        SmartDashboard.putNumber("F_Distance[mm]", distanceMillimeters)
-        SmartDashboard.putNumber("F_Distance[in]", distanceInches)
-        SmartDashboard.putNumber("B_Distance[mm]", backSensor.getRangeMM())
-        SmartDashboard.putNumber("B_Distance[in]", backSensor.getRangeInches())
+        SmartDashboard.putNumber("F_Distance[mm]", self.frontSensor.getRangeMM())
+        SmartDashboard.putNumber("F_Distance[in]", self.frontSensor.getRangeInches())
+        SmartDashboard.putNumber("B_Distance[mm]", self.backSensor.getRangeMM())
+        SmartDashboard.putNumber("B_Distance[in]", self.backSensor.getRangeInches())
 
     def testInit(self):
         # By default, the Ultrasonic class polls all ultrasonic sensors every in a round-robin to prevent
