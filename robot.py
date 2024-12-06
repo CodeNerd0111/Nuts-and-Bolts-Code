@@ -42,15 +42,16 @@ class MyRobot(wpilib.TimedRobot):
         # Other data to upload to the dashboard under a new Variable Config tab
         self.clearance = Shuffleboard.getTab("Variable Config").add(title="Sensor Stop Gap", defaultValue=1.0).getEntry()
         self.speed = Shuffleboard.getTab("Variable Config").add(title="Speed Multiplier", defaultValue=1.0).getEntry()
-        
-        # Initilizes gyro object
-        self.gyro = wpilib.AnalogGyro(0)
-        self.gyro.setSensitivity(self.kVoltsPerDegreePerSecond.getDouble(0.0128))
+    
 
         # Other data to upload to the dashboard under a new Variable Config tab
         self.clearance = Shuffleboard.getTab("Variable Config").add(title="Sensor Stop Gap", defaultValue=1.0).getEntry()
         self.speed = Shuffleboard.getTab("Variable Config").add(title="Speed Multiplier", defaultValue=1.0).getEntry()
         self.kVoltsPerDegreePerSecond = Shuffleboard.getTab("Variable Config").add(title="Gyro Sensitivity", defaultValue=0.0128).getEntry()
+
+        # Initilizes gyro object
+        self.gyro = wpilib.AnalogGyro(0)
+        self.gyro.setSensitivity(self.kVoltsPerDegreePerSecond.getDouble(0.0128))
 
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
