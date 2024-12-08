@@ -5,6 +5,7 @@ import rev
 from wpilib.cameraserver import CameraServer
 from wpilib.shuffleboard import Shuffleboard
 from wpilib import SmartDashboard
+from wpilib import Counter
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
@@ -45,9 +46,12 @@ class MyRobot(wpilib.TimedRobot):
 
 
         # Creates two PWM objects to represent the front and back sensors on specified channels
-        self.frontSensor = wpilib.PWM(self.frontSensor_Channel.getInteger(0))
-        self.backSensor = wpilib.PWM(self.backSensor_Channel.getInteger(1))
+        self.frontSensor = wpilib.Counter(self.frontSensor_Channel.getInteger(0))
+        self.backSensor = wpilib.Counter(self.backSensor_Channel.getInteger(1))
         
+        # Configures the sensors to read pulse width
+        self.frontSensor.setSemiPeriodMode(True)
+        self.backSensor.setSemiPeriodMode(True)
 
         # Add the ultrasonic to the "Sensors" tab of the dashboard
         # Data will update automatically
@@ -110,9 +114,19 @@ class MyRobot(wpilib.TimedRobot):
         SmartDashboard.putNumber("B_Distance[mm]", self.backSensor.getRangeMM())
         SmartDashboard.putNumber("B_Distance[in]", self.backSensor.getRangeInches())"""
 
-        # Publish PWM sensor data
-        SmartDashboard.putNumber("Front PWM", self.frontSensor.getPulseTime())
-        SmartDashboard.putNumber("Back PWM", self.backSensor.getPulseTime())
+        # Constant for seconds to cm conversion
+        SECONDS_PER_CM = .001
+        # Reads the pulse widths
+        self.front_pulse_width = self.frontSensor.getPeriod()
+        self.back_pulse_width = self.backSensor.getPeriod()
+
+        # Converts the data into cm
+        self.front_pulse_cm = self.front_pulse_width / SECONDS_PER_CM
+        self.back_pulse_cm = self.back_pulse_width / SECONDS_PER_CM
+
+        # Publishes the data to the SmartDashboard
+        SmartDashboard.putNumber("Front Distance (cm)", self.front_pulse_cm)
+        SmartDashboard.putNumber("Back Distance (cm)", self.back_pulse_cm)
 
         # Publish the data from the gyro
         SmartDashboard.putNumber("Gyro Angle", self.gyro.getAngle())
