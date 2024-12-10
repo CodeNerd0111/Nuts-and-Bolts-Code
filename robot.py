@@ -6,6 +6,7 @@ from wpilib.cameraserver import CameraServer
 from wpilib.shuffleboard import Shuffleboard
 from wpilib import SmartDashboard
 from wpilib import Counter
+from vision import qrreader
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
@@ -45,6 +46,7 @@ class MyRobot(wpilib.TimedRobot):
         CameraServer.launch("vision.py:main")
 
 
+
         # Creates two PWM objects to represent the front and back sensors on specified channels
         self.frontSensor = wpilib.Counter(self.frontSensor_Channel.getInteger(0))
         self.backSensor = wpilib.Counter(self.backSensor_Channel.getInteger(1))
@@ -72,9 +74,9 @@ class MyRobot(wpilib.TimedRobot):
         self.gyro = wpilib.AnalogGyro(self.gyro_Channel.getInteger(0))
         self.gyro.setSensitivity(self.kVoltsPerDegreePerSecond.getDouble(0.0128))
 
-
-
-        print("Enabled") # Just testing it out seeing if it will output to the command console terminal
+        # Publish the data from a read QR code
+        self.qr_code = qrreader()
+        SmartDashboard.putString("QR code Date", str(self.qr_code))
 
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
@@ -108,12 +110,6 @@ class MyRobot(wpilib.TimedRobot):
         # driveVal is the translational motion and turnVal is the rotational motion
         self.robotDrive.arcadeDrive(driveVal, turnVal)
 
-        """# Publish the data from both sensors
-        SmartDashboard.putNumber("F_Distance[mm]", self.frontSensor.getRangeMM())
-        SmartDashboard.putNumber("F_Distance[in]", self.frontSensor.getRangeInches())
-        SmartDashboard.putNumber("B_Distance[mm]", self.backSensor.getRangeMM())
-        SmartDashboard.putNumber("B_Distance[in]", self.backSensor.getRangeInches())"""
-
         # Constant for seconds to cm conversion
         SECONDS_PER_CM = .001
         # Reads the pulse widths
@@ -133,22 +129,8 @@ class MyRobot(wpilib.TimedRobot):
         SmartDashboard.putNumber("Gyro Center", self.gyro.getCenter())
         SmartDashboard.putNumber("Gyro Rate", self.gyro.getRate())
 
-    def testInit(self):
-        # By default, the Ultrasonic class polls all ultrasonic sensors every in a round-robin to prevent
-        # them from interfering from one another.
-        # However, manual polling is also possible -- notes that this disables automatic mode!
-        """self.frontSensor.ping()
-    def testPeriodic(self):
-        if self.frontSensor.isRangeValid():
-            # Data is valid, publish it
-            SmartDashboard.putNumber("F_Distance[mm]", self.frontSensor.getRangeMM())
-            SmartDashboard.putNumber("F_Distance[in]", self.frontSensor.getRangeInches())
 
-            # Ping for next measurement
-            self.frontSensor.ping()
-    def testExit(self):
-        # Enable automatic mode
-        self.frontSensor.setAutomaticMode(True)"""
+
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)

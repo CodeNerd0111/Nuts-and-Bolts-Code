@@ -21,10 +21,6 @@ import numpy as np
 
 from cscore import CameraServer as CS
 def main():
-    #more qrcode stuff that may not work probably will break cscore somehow
-    camera_id = 0
-    qcd = cv2.QRCodeDetector()
-    cap = cv2.VideoCapture(camera_id)
     CS.enableLogging()
     # Get the UsbCamera from CameraServer
     camera = CS.startAutomaticCapture()
@@ -55,3 +51,32 @@ def main():
 
         # Give the output stream a new image to display
         outputStream.putFrame(mat)
+
+
+def qrreader():
+    # Create a QRCodeDetector object
+    qcd = cv2.QRCodeDetector()
+    
+    # Open the camera
+    cap = cv2.VideoCapture(0)
+    while True:
+        # Capture a frame
+        ret, frame = cap.read()
+        
+        # If there is an error with reading the video
+        if not ret:
+            return "Failed to capture image"
+        
+        # Detect and decode QR codes
+        ret_qr, decoded_info, points, _ = qcd.detectAndDecodeMulti(frame)
+
+        cap.release()
+
+        # If QR codes were detected, return the decoded information
+        if ret_qr:
+            for s in decoded_info:
+                if s:
+                    return s
+        else:
+            return "no QR code"
+    
