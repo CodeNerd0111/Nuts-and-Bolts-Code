@@ -5,7 +5,6 @@ import rev
 from wpilib.cameraserver import CameraServer
 from wpilib.shuffleboard import Shuffleboard
 from wpilib import SmartDashboard
-from wpilib import Counter
 from vision import qrreader
 
 class MyRobot(wpilib.TimedRobot):
@@ -17,8 +16,8 @@ class MyRobot(wpilib.TimedRobot):
         self.l_joystick_Channel = Shuffleboard.getTab("Device Ports").add(title="Left Controller [USB]", defaultValue=0).getEntry()
         self.leftDrive_Channel = Shuffleboard.getTab("Device Ports").add(title="Left Motor [CAN]", defaultValue=21).getEntry()
         self.rightDrive_Channel = Shuffleboard.getTab("Device Ports").add(title="Left Controller [CAN]", defaultValue=22).getEntry()
-        self.frontSensor_Channel = Shuffleboard.getTab("Device Ports").add(title="Front Sensor [PWM]", defaultValue=0).getEntry()
-        self.backSensor_Channel = Shuffleboard.getTab("Device Ports").add(title="Back Sensor [PWM]", defaultValue=1).getEntry()
+        self.frontSensor_Channel = Shuffleboard.getTab("Device Ports").add(title="Front Sensor [DIO]", defaultValue=0).getEntry()
+        self.backSensor_Channel = Shuffleboard.getTab("Device Ports").add(title="Back Sensor [DIO]", defaultValue=1).getEntry()
         self.gyro_Channel = Shuffleboard.getTab("Device Ports").add(title="Gyro [Analog]", defaultValue=0).getEntry()
 
 
@@ -46,14 +45,13 @@ class MyRobot(wpilib.TimedRobot):
         CameraServer.launch("vision.py:main")
 
 
-
-        # Creates two PWM objects to represent the front and back sensors on specified channels
+        # Creates two DIO objects to represent the front and back sensors on specified channels
         self.frontSensor = wpilib.Counter(self.frontSensor_Channel.getInteger(0))
         self.backSensor = wpilib.Counter(self.backSensor_Channel.getInteger(1))
-        
-        # Configures the sensors to read pulse width
+
         self.frontSensor.setSemiPeriodMode(True)
         self.backSensor.setSemiPeriodMode(True)
+
 
         # Add the ultrasonic to the "Sensors" tab of the dashboard
         # Data will update automatically
@@ -74,9 +72,8 @@ class MyRobot(wpilib.TimedRobot):
         self.gyro = wpilib.AnalogGyro(self.gyro_Channel.getInteger(0))
         self.gyro.setSensitivity(self.kVoltsPerDegreePerSecond.getDouble(0.0128))
 
-        # Publish the data from a read QR code
+        # Initilizes the QR code reader
         self.qr_code = qrreader()
-        SmartDashboard.putString("QR code Date", str(self.qr_code))
 
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
@@ -111,14 +108,15 @@ class MyRobot(wpilib.TimedRobot):
         self.robotDrive.arcadeDrive(driveVal, turnVal)
 
         # Constant for seconds to cm conversion
+        # Conversion is broken the sensors range is from 0 units to 1 unit
         SECONDS_PER_CM = .001
         # Reads the pulse widths
         self.front_pulse_width = self.frontSensor.getPeriod()
         self.back_pulse_width = self.backSensor.getPeriod()
 
-        # Converts the data into cm
-        self.front_pulse_cm = self.front_pulse_width / SECONDS_PER_CM
-        self.back_pulse_cm = self.back_pulse_width / SECONDS_PER_CM
+        # Converts the data into cm / No it doesn't :|
+        self.front_pulse_cm = self.front_pulse_width / SECONDS_PER_CM - 1
+        self.back_pulse_cm = self.back_pulse_width / SECONDS_PER_CM - 1
 
         # Publishes the data to the SmartDashboard
         SmartDashboard.putNumber("Front Distance (cm)", self.front_pulse_cm)
@@ -128,6 +126,10 @@ class MyRobot(wpilib.TimedRobot):
         SmartDashboard.putNumber("Gyro Angle", self.gyro.getAngle())
         SmartDashboard.putNumber("Gyro Center", self.gyro.getCenter())
         SmartDashboard.putNumber("Gyro Rate", self.gyro.getRate())
+
+        # Publish the data from a read QR code
+        SmartDashboard.putString("QR code Date", str(self.qr_code))
+
 
 
 

@@ -28,9 +28,10 @@ robotpy_extras = [
 ]
 
 # Other pip packages to install
-requires = ["robotpy-rev",
- "robotpy-cscore",
-  "numpy",
-  "robotpy-opencv; platform_machine == 'roborio'",
-  "opencv-python; platform_machine != 'roborio'",
-  ]
+requires = [
+"robotpy-rev",
+"robotpy-cscore",
+"numpy",
+"robotpy-opencv; platform_machine == 'roborio'",
+"opencv-python; platform_machine != 'roborio'",
+]
