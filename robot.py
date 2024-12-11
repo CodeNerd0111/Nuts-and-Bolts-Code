@@ -5,7 +5,6 @@ import rev
 from wpilib.cameraserver import CameraServer
 from wpilib.shuffleboard import Shuffleboard
 from wpilib import SmartDashboard
-from vision import qrreader
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
@@ -72,8 +71,7 @@ class MyRobot(wpilib.TimedRobot):
         self.gyro = wpilib.AnalogGyro(self.gyro_Channel.getInteger(0))
         self.gyro.setSensitivity(self.kVoltsPerDegreePerSecond.getDouble(0.0128))
 
-        # Initilizes the QR code reader
-        self.qr_code = qrreader()
+
 
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
@@ -127,8 +125,6 @@ class MyRobot(wpilib.TimedRobot):
         SmartDashboard.putNumber("Gyro Center", self.gyro.getCenter())
         SmartDashboard.putNumber("Gyro Rate", self.gyro.getRate())
 
-        # Publish the data from a read QR code
-        SmartDashboard.putString("QR code Date", str(self.qr_code))
 
 
 

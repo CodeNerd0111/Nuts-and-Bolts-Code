@@ -18,24 +18,32 @@
 
 import cv2
 import numpy as np
-import wpilib
-
+from wpilib import SmartDashboard
+import logging
 from cscore import CameraServer as CS
 def main():
     CS.enableLogging()
     # Get the UsbCamera from CameraServer
     camera = CS.startAutomaticCapture()
+    logging.info("Started Automatic Capture")
     # Set the resolution
     camera.setResolution(640, 480)
+    logging.info("Set Resolution")
     #camera.setResolution(1280, 720)
 
     # Get a CvSink. This will capture images from the camera
     cvSink = CS.getVideo()
+    logging.info("Declared cvSink")
+    # Creates a QRCodeDetector object
+    qcd = cv2.QRCodeDetector()
+    logging.info("Declared QR Code Detector")
     # Setup a CvSource. This will send images back to the Dashboard
     outputStream = CS.putVideo("Rectangle", 640, 480)
+    logging.info("Outputing Rectangle")
 
     # Allocating new images is very expensive, always try to preallocate
     mat = np.zeros(shape=(480, 640, 3), dtype=np.uint8)
+    logging.info("Declared mat")
 
     while True:
         # Tell the CvSink to grab a frame from the camera and put it
@@ -43,19 +51,31 @@ def main():
         time, mat = cvSink.grabFrame(mat)
         if time == 0:
             # Send the output the error.
-            outputStream.notifyError(cvSink.getError())
+            error = cvSink.getError()
+            outputStream.notifyError(error)
+            logging.info(error)
             # skip the rest of the current iteration
             continue
+        # Detect and decode QR codes
+        ret_qr, decoded_info, points, _ = qcd.detectAndDecodeMulti(mat)
 
-        # Put a rectangle on the image
-        cv2.rectangle(mat, (100, 100), (400, 400), (255, 255, 255), 5)
+        # If QR codes were detected, return the decoded information
+        if ret_qr:
+            for s in decoded_info:
+                if s:
+                    cv2.rectangle(mat, points, (400, 400), (0, 255, 0), 5)
+                    SmartDashboard.putString("QR code Date", str(s))
+                    logging.info(s)
+                else:
+                    cv2.rectangle(mat, (100, 100), (400, 400), (0, 0, 255), 5)
+                    SmartDashboard.putString("QR code Date", "No QR Code")        
 
 
         # Give the output stream a new image to display
         outputStream.putFrame(mat)
 
 
-def qrreader():
+'''def qrreader():
     # Does not check the code during the test so it passes
     if wpilib.RobotBase.isSimulation():
         return "Simulated environment: No camera available"
@@ -91,4 +111,4 @@ def qrreader():
                 return "no QR code"
     finally:
         return "THE MOST UNSKIBIDI THING THAT COULD HAPPEN"
-
+'''
