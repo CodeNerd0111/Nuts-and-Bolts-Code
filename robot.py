@@ -1,6 +1,7 @@
 
 import wpilib
 import wpilib.drive
+import wpimath.controller
 import rev
 from wpilib.cameraserver import CameraServer
 from wpilib.shuffleboard import Shuffleboard
@@ -96,10 +97,12 @@ class MyRobot(wpilib.TimedRobot):
         driveVal = -(self.l_joystick.getY()) ** 3
         turnVal = (self.l_joystick.getX()) ** 3
 
-        # Remove this is we don't want to only go in a straight line
-        if abs(self.l_joystick.getX()) < 0.1: 
-            turnVal = -int(self.gyro.getYaw()) * 0.1
-            SmartDashboard.putNumber("Turn Speed", turnVal)
+        # Keep the buddy going in a straight line if no turn
+        if abs(self.l_joystick.getX()) < 0.1:
+            returnToStraight = wpimath.controller.PIDController(Kp=0.1, Ki=0.1, Kd=0.1, period=0.02)
+            returnToStraight.setSetpoint(0)
+            turnVal = returnToStraight.calculate(self.gyro.getYaw())
+        SmartDashboard.putNumber("Turn Speed", turnVal)
 
 
         # Reads the pulse widths
