@@ -5,6 +5,7 @@ import rev
 from wpilib.cameraserver import CameraServer
 from wpilib.shuffleboard import Shuffleboard
 from wpilib import SmartDashboard
+import navx
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
@@ -18,7 +19,6 @@ class MyRobot(wpilib.TimedRobot):
         self.frontSensor_Channel = Shuffleboard.getTab("Device Ports").add(title="Front Sensor [DIO]", defaultValue=0).getEntry()
         self.backSensor_Channel = Shuffleboard.getTab("Device Ports").add(title="Back Sensor [DIO]", defaultValue=1).getEntry()
         self.gyro_Channel = Shuffleboard.getTab("Device Ports").add(title="Gyro [Analog]", defaultValue=0).getEntry()
-
 
         
         
@@ -41,7 +41,7 @@ class MyRobot(wpilib.TimedRobot):
 
 
         # Links to CameraServer in vision.py
-        #CameraServer.launch("vision.py:main")
+        CameraServer.launch("vision.py:main")
 
 
         # Creates two DIO objects to represent the front and back sensors on specified channels
@@ -68,8 +68,7 @@ class MyRobot(wpilib.TimedRobot):
         self.kVoltsPerDegreePerSecond = Shuffleboard.getTab("Variable Config").add(title="Gyro Sensitivity", defaultValue=0.0128).getEntry()
 
         # Initilizes gyro object
-        self.gyro = wpilib.AnalogGyro(self.gyro_Channel.getInteger(0))
-        self.gyro.setSensitivity(self.kVoltsPerDegreePerSecond.getDouble(0.0128))
+        self.gyro = navx.AHRS(wpilib.SerialPort.Port.kUSB1)
 
 
 
@@ -97,6 +96,12 @@ class MyRobot(wpilib.TimedRobot):
         driveVal = -(self.l_joystick.getY()) ** 3
         turnVal = (self.l_joystick.getX()) ** 3
 
+        # Remove this is we don't want to only go in a straight line
+        if abs(self.l_joystick.getX()) < 0.1: 
+            turnVal = -int(self.gyro.getYaw()) * 0.1
+            SmartDashboard.putNumber("Turn Speed", turnVal)
+
+
         # Reads the pulse widths
         # Gets the period in seconds, convert to µs
         self.front_pulse_width = (self.frontSensor.getPeriod()) * 1000000
@@ -113,9 +118,11 @@ class MyRobot(wpilib.TimedRobot):
         SmartDashboard.putNumber("Back Distance (cm)", self.back_pulse_cm)
 
         # Publish the data from the gyro
-        SmartDashboard.putNumber("Gyro Angle", self.gyro.getAngle())
-        SmartDashboard.putNumber("Gyro Center", self.gyro.getCenter())
+        SmartDashboard.putNumber("Gyro Angle", self.gyro.getYaw())
         SmartDashboard.putNumber("Gyro Rate", self.gyro.getRate())
+
+        
+        
 
         #Keep our buddy away from the walls :)
         maxSpeedForward = ((self.front_pulse_cm / self.clearance.getDouble(1.0)) ** 2) - 1

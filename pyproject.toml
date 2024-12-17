@@ -34,4 +34,5 @@ requires = [
 "numpy",
 "robotpy-opencv; platform_machine == 'roborio'",
 "opencv-python; platform_machine != 'roborio'",
+"robotpy-navx",
 ]
