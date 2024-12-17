@@ -41,7 +41,7 @@ class MyRobot(wpilib.TimedRobot):
 
 
         # Links to CameraServer in vision.py
-        CameraServer.launch("vision.py:main")
+        #CameraServer.launch("vision.py:main")
 
 
         # Creates two DIO objects to represent the front and back sensors on specified channels
@@ -58,7 +58,7 @@ class MyRobot(wpilib.TimedRobot):
         Shuffleboard.getTab("Sensors").add(self.backSensor)
 
         # Other data to upload to the dashboard under a new Variable Config tab
-        self.clearance = Shuffleboard.getTab("Variable Config").add(title="Sensor Stop Gap", defaultValue=1.0).getEntry()
+        self.clearance = Shuffleboard.getTab("Variable Config").add(title="Sensor Stop Gap", defaultValue=30.0).getEntry()
         self.speed = Shuffleboard.getTab("Variable Config").add(title="Speed Multiplier", defaultValue=1.0).getEntry()
     
 
@@ -94,27 +94,19 @@ class MyRobot(wpilib.TimedRobot):
     def teleopPeriodic(self):
         """This function is called periodically during teleoperated mode."""
 
-        driveVal = -self.l_joystick.getY()
-        turnVal = self.l_joystick.getX()
-        """if self.backSensor.getRange() < self.clearance.getDouble(1.0) and driveVal < 0 and self.backSensor.isRangeValid():
-            driveVal = 0
-        elif self.backSensor.getRange() < self.clearance.getDouble(1.0) and driveVal > 0 and self.frontSensor.isRangeValid():
-            driveVal = 0"""
+        driveVal = -(self.l_joystick.getY()) ** 3
+        turnVal = (self.l_joystick.getX()) ** 3
 
-        # Controls motor speeds
-        # driveVal is the translational motion and turnVal is the rotational motion
-        self.robotDrive.arcadeDrive(driveVal, turnVal)
-
-        # Constant for seconds to cm conversion
-        # Conversion is broken the sensors range is from 0 units to 1 unit
-        SECONDS_PER_CM = .001
         # Reads the pulse widths
-        self.front_pulse_width = self.frontSensor.getPeriod()
-        self.back_pulse_width = self.backSensor.getPeriod()
+        # Gets the period in seconds, convert to µs
+        self.front_pulse_width = (self.frontSensor.getPeriod()) * 1000000
+        self.back_pulse_width = (self.backSensor.getPeriod()) * 1000000
 
-        # Converts the data into cm / No it doesn't :|
-        self.front_pulse_cm = self.front_pulse_width / SECONDS_PER_CM - 1
-        self.back_pulse_cm = self.back_pulse_width / SECONDS_PER_CM - 1
+        # Converts the data into cm / No it doesn't :| / Yeab :D
+        # 4mm / 1µs ⋅ (t –1000 µs) = distance [mm] ---- https://www.pololu.com/product/4079
+
+        self.front_pulse_cm = (self.front_pulse_width - 1000) * 0.4
+        self.back_pulse_cm = (self.back_pulse_width - 1000) * 0.4
 
         # Publishes the data to the SmartDashboard
         SmartDashboard.putNumber("Front Distance (cm)", self.front_pulse_cm)
@@ -124,6 +116,20 @@ class MyRobot(wpilib.TimedRobot):
         SmartDashboard.putNumber("Gyro Angle", self.gyro.getAngle())
         SmartDashboard.putNumber("Gyro Center", self.gyro.getCenter())
         SmartDashboard.putNumber("Gyro Rate", self.gyro.getRate())
+
+        #Keep our buddy away from the walls :)
+        maxSpeedForward = ((self.front_pulse_cm / self.clearance.getDouble(1.0)) ** 2) - 1
+        maxSpeedBackward = -((self.back_pulse_cm / self.clearance.getDouble(1.0)) ** 2) - 1
+
+        SmartDashboard.putNumber("maxSpeedForward", maxSpeedForward)
+        SmartDashboard.putNumber("maxSpeedBackward", maxSpeedBackward)
+
+        driveVal = maxSpeedForward if driveVal > maxSpeedForward else driveVal
+        driveVal = maxSpeedBackward if driveVal < maxSpeedBackward else driveVal
+
+        # Controls motor speeds
+        # driveVal is the translational motion and turnVal is the rotational motion
+        self.robotDrive.arcadeDrive(driveVal, turnVal)
 
 
 

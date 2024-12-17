@@ -35,7 +35,7 @@ def main():
     cvSink = CS.getVideo()
     logging.info("Declared cvSink")
     # Creates a QRCodeDetector object
-    qcd = cv2.QRCodeDetector()
+    #qcd = cv2.QRCodeDetector()
     logging.info("Declared QR Code Detector")
     # Setup a CvSource. This will send images back to the Dashboard
     outputStream = CS.putVideo("Rectangle", 640, 480)
@@ -57,7 +57,7 @@ def main():
             # skip the rest of the current iteration
             continue
         # Detect and decode QR codes
-        ret_qr, decoded_info, points, _ = qcd.detectAndDecodeMulti(mat)
+        '''ret_qr, decoded_info, points, _ = qcd.detectAndDecodeMulti(mat)
 
         # If QR codes were detected, return the decoded information
         if ret_qr:
@@ -72,7 +72,7 @@ def main():
 
 
         # Give the output stream a new image to display
-        outputStream.putFrame(mat)
+        outputStream.putFrame(mat)'''
 
 
 '''def qrreader():
