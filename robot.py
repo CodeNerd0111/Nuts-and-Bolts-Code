@@ -89,6 +89,9 @@ class MyRobot(wpilib.TimedRobot):
 
     def teleopInit(self):
         """This function is called once each time the robot enters teleoperated mode."""
+        self.returnToStraight = wpimath.controller.PIDController(Kp=1, Ki=0.0, Kd=0.0, period=0.02)
+        self.returnToStraight.setSetpoint(0)
+        self.returnToStraight.setTolerance(positionTolerance=1, velocityTolerance=1)
 
 
     def teleopPeriodic(self):
@@ -98,10 +101,8 @@ class MyRobot(wpilib.TimedRobot):
         turnVal = (self.l_joystick.getX()) ** 3
 
         # Keep the buddy going in a straight line if no turn
-        if abs(self.l_joystick.getX()) < 0.1:
-            returnToStraight = wpimath.controller.PIDController(Kp=0.1, Ki=0.1, Kd=0.1, period=0.02)
-            returnToStraight.setSetpoint(0)
-            turnVal = returnToStraight.calculate(self.gyro.getYaw())
+        if abs(self.l_joystick.getX()) < 0.1 and abs(self.l_joystick.getY()) < 0.1 and not self.returnToStraight.atSetpoint():
+            turnVal = self.returnToStraight.calculate(self.gyro.getYaw())
         SmartDashboard.putNumber("Turn Speed", turnVal)
 
 
