@@ -91,7 +91,7 @@ class MyRobot(wpilib.TimedRobot):
         """This function is called once each time the robot enters teleoperated mode."""
         self.returnToStraight = wpimath.controller.PIDController(Kp=1, Ki=0.0, Kd=0.0, period=0.02)
         self.returnToStraight.setSetpoint(0)
-        self.returnToStraight.setTolerance(positionTolerance=1, velocityTolerance=1)
+        self.returnToStraight.setTolerance(positionTolerance=2, velocityTolerance=1)
 
 
     def teleopPeriodic(self):
@@ -100,11 +100,13 @@ class MyRobot(wpilib.TimedRobot):
         driveVal = -(self.l_joystick.getY()) ** 3
         turnVal = (self.l_joystick.getX()) ** 3
 
-        # Keep the buddy going in a straight line if no turn
+        # Keep the buddy going in a straight line if no turn / VERY DANGEROUS USE WITH CAUTION :O
         if abs(self.l_joystick.getX()) < 0.1 and abs(self.l_joystick.getY()) < 0.1 and not self.returnToStraight.atSetpoint():
-            turnVal = self.returnToStraight.calculate(self.gyro.getYaw())
+            turnVal = int(self.returnToStraight.calculate(self.gyro.getYaw()))
         SmartDashboard.putNumber("Turn Speed", turnVal)
-
+        SmartDashboard.putNumber("Turning acceleration", self.gyro.getRawAccelX)
+        SmartDashboard.putNumber("Forward Acceleration", self.gyro.getRawAccelY)
+        SmartDashboard.putBoolean("Is it Moving", self.gyro.isMoving)
 
         # Reads the pulse widths
         # Gets the period in seconds, convert to µs
@@ -126,11 +128,12 @@ class MyRobot(wpilib.TimedRobot):
         SmartDashboard.putNumber("Gyro Rate", self.gyro.getRate())
 
         
-        
 
-        #Keep our buddy away from the walls :)
-        maxSpeedForward = ((self.front_pulse_cm / self.clearance.getDouble(1.0)) ** 2) - 1
-        maxSpeedBackward = -((self.back_pulse_cm / self.clearance.getDouble(1.0)) ** 2) - 1
+        #Keep our buddy away from the walls :(
+        if self.front_pulse_cm < 200:
+            maxSpeedForward = ((self.front_pulse_cm / self.clearance.getDouble(1.0)) ** 2) - 1
+        elif self.back_pulse_cm < 200:
+            maxSpeedBackward = -((self.back_pulse_cm / self.clearance.getDouble(1.0)) ** 2) - 1
 
         SmartDashboard.putNumber("maxSpeedForward", maxSpeedForward)
         SmartDashboard.putNumber("maxSpeedBackward", maxSpeedBackward)
