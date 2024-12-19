@@ -12,8 +12,8 @@ p_backSensor = 1
 
 
 # Gyro PID Constants
-Kp = 1
-Ki = 0.0
+Kp = 1.3
+Ki = 0.1
 Kd = 0.5
 posTolerance = 2
 velTolerance = 1

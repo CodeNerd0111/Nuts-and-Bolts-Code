@@ -77,6 +77,10 @@ class MyRobot(wpilib.TimedRobot):
         self.returnToStraight.setSetpoint(const.setPoint)
         self.returnToStraight.setTolerance(positionTolerance=const.posTolerance, velocityTolerance=const.velTolerance)
 
+        # For myPID
+        self.integral = 0
+        self.prevError = 0
+        self.lastTime = 0
 
     def teleopPeriodic(self):
         """This function is called periodically during teleoperated mode."""
@@ -85,16 +89,25 @@ class MyRobot(wpilib.TimedRobot):
         turnVal = (self.l_joystick.getX()) ** 3
 
         # Keep the buddy going in a straight line if no turn / VERY DANGEROUS USE WITH CAUTION :O
-        if abs(self.l_joystick.getX()) < const.joyDead and abs(self.l_joystick.getY()) < const.joyDead and not self.returnToStraight.atSetpoint():
-            turnVal = int(self.returnToStraight.calculate(self.gyro.getYaw()))
+        """if abs(self.l_joystick.getX()) < const.joyDead and abs(self.l_joystick.getY()) < const.joyDead and not self.returnToStraight.atSetpoint():
+            turnVal = int(self.returnToStraight.calculate(self.gyro.getYaw()))"""
+        
+        if abs(self.l_joystick.getX()) < const.joyDead and abs(self.l_joystick.getY()) < const.joyDead and abs(const.setPoint - self.gyro.getYaw()) < const.posTolerance:
+            turnVal = self.myPIDControllerCalc(const.setPoint-self.gyro.getYaw(), self.timer.get() - self.lastTime)
+            self.lastTime = self.timer.get()
+        else:
+            self.integral = 0
+            self.prevError = 0
+
+
 
         # Reads the pulse widths
         # Gets the period in seconds, convert to µs
         self.front_pulse_width = (self.frontSensor.getPeriod()) * 1000000
         self.back_pulse_width = (self.backSensor.getPeriod()) * 1000000
 
-        # Converts the data into cm / No it doesn't :| / Yeab :D
-        # 4mm / 1µs ⋅ (t –1000 µs) = distance [mm] ---- https://www.pololu.com/product/4079
+        # Converts the data into cm
+        # 0.4cm / 1µs ⋅ (t – 1000 µs) = distance [cm] ---- https://www.pololu.com/product/4079
 
         self.front_pulse_cm = (self.front_pulse_width - 1000) * 0.4
         self.back_pulse_cm = (self.back_pulse_width - 1000) * 0.4
@@ -127,6 +140,12 @@ class MyRobot(wpilib.TimedRobot):
         # Controls motor speeds
         # driveVal is the translational motion and turnVal is the rotational motion
         self.robotDrive.arcadeDrive(driveVal, turnVal)
+
+    def myPIDControllerCalc(self, error:float, dt:float):
+        self.integral = self.integral + error * dt
+        derivative = (error - self.prevError) / dt
+        self.prevError = error
+        return (const.Kp * error + const.Ki * self.integral + const.Kd * derivative)/180
 
 
 
