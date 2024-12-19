@@ -73,9 +73,9 @@ class MyRobot(wpilib.TimedRobot):
 
     def teleopInit(self):
         """This function is called once each time the robot enters teleoperated mode."""
-        self.returnToStraight = wpimath.controller.PIDController(Kp=const.Kp, Ki=const.Ki, Kd=const.Kd, period=const.period)
+        """self.returnToStraight = wpimath.controller.PIDController(Kp=const.Kp, Ki=const.Ki, Kd=const.Kd, period=const.period)
         self.returnToStraight.setSetpoint(const.setPoint)
-        self.returnToStraight.setTolerance(positionTolerance=const.posTolerance, velocityTolerance=const.velTolerance)
+        self.returnToStraight.setTolerance(positionTolerance=const.posTolerance, velocityTolerance=const.velTolerance)"""
         
         # For myPID
         self.integral = 0
@@ -93,7 +93,7 @@ class MyRobot(wpilib.TimedRobot):
         """if abs(self.l_joystick.getX()) < const.joyDead and abs(self.l_joystick.getY()) < const.joyDead and not self.returnToStraight.atSetpoint():
             turnVal = int(self.returnToStraight.calculate(self.gyro.getYaw()))"""
         
-        if abs(self.l_joystick.getX()) < const.joyDead and abs(self.l_joystick.getY()) < const.joyDead and abs(const.setPoint - self.gyro.getYaw()) < const.posTolerance:
+        if abs(self.l_joystick.getX()) < const.joyDead and abs(self.l_joystick.getY()) < const.joyDead and abs(const.setPoint - self.gyro.getYaw()) < const.posTolerance.getFloat(const.D_posTolerance):
             turnVal = self.myPIDControllerCalc(const.setPoint - self.gyro.getYaw(), const.period)
             self.lastTime = self.timer.get()
         else:
@@ -142,7 +142,7 @@ class MyRobot(wpilib.TimedRobot):
         self.integral = self.integral + error * dt
         derivative = (error - self.prevError) / dt
         self.prevError = error
-        return (const.Kp * error + const.Ki * self.integral + const.Kd * derivative)/180
+        return (const.Kp.getFloat(const.D_Kp) * error + const.Ki.getFloat(const.D_Ki) * self.integral + const.Kd.getFloat(const.D_Kd) * derivative)/180
 
 
 
