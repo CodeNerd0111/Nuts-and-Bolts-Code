@@ -76,7 +76,11 @@ class MyRobot(wpilib.TimedRobot):
         self.returnToStraight = wpimath.controller.PIDController(Kp=const.Kp, Ki=const.Ki, Kd=const.Kd, period=const.period)
         self.returnToStraight.setSetpoint(const.setPoint)
         self.returnToStraight.setTolerance(positionTolerance=const.posTolerance, velocityTolerance=const.velTolerance)
-
+        
+        # For myPID
+        self.integral = 0
+        self.prevError = 0
+        self.lastTime = 0
 
     def teleopPeriodic(self):
         """This function is called periodically during teleoperated mode."""
@@ -85,8 +89,16 @@ class MyRobot(wpilib.TimedRobot):
         turnVal = (self.l_joystick.getX()) ** 3
 
         # Keep the buddy going in a straight line if no turn
-        if abs(self.l_joystick.getX()) < const.joyDead and abs(self.l_joystick.getY()) < const.joyDead and not self.returnToStraight.atSetpoint():
-            turnVal = self.returnToStraight.calculate(self.gyro.getYaw())
+        # Keep the buddy going in a straight line if no turn / VERY DANGEROUS USE WITH CAUTION :O
+        """if abs(self.l_joystick.getX()) < const.joyDead and abs(self.l_joystick.getY()) < const.joyDead and not self.returnToStraight.atSetpoint():
+            turnVal = int(self.returnToStraight.calculate(self.gyro.getYaw()))"""
+        
+        if abs(self.l_joystick.getX()) < const.joyDead and abs(self.l_joystick.getY()) < const.joyDead and abs(const.setPoint - self.gyro.getYaw()) < const.posTolerance:
+            turnVal = self.myPIDControllerCalc(const.setPoint - self.gyro.getYaw(), const.period)
+            self.lastTime = self.timer.get()
+        else:
+            self.integral = 0
+            self.prevError = 0
         SmartDashboard.putNumber("Turn Speed", turnVal)
 
 
@@ -113,18 +125,24 @@ class MyRobot(wpilib.TimedRobot):
         
 
         #Keep our buddy away from the walls :)
-        maxSpeedForward = ((self.front_pulse_cm / self.clearance.getDouble(1.0)) ** 2) - 1
+        """maxSpeedForward = ((self.front_pulse_cm / self.clearance.getDouble(1.0)) ** 2) - 1
         maxSpeedBackward = -((self.back_pulse_cm / self.clearance.getDouble(1.0)) ** 2) - 1
 
         SmartDashboard.putNumber("maxSpeedForward", maxSpeedForward)
         SmartDashboard.putNumber("maxSpeedBackward", maxSpeedBackward)
 
         driveVal = maxSpeedForward if driveVal > maxSpeedForward else driveVal
-        driveVal = maxSpeedBackward if driveVal < maxSpeedBackward else driveVal
+        driveVal = maxSpeedBackward if driveVal < maxSpeedBackward else driveVal"""
 
         # Controls motor speeds
         # driveVal is the translational motion and turnVal is the rotational motion
         self.robotDrive.arcadeDrive(driveVal, turnVal)
+
+    def myPIDControllerCalc(self, error:float, dt:float):
+        self.integral = self.integral + error * dt
+        derivative = (error - self.prevError) / dt
+        self.prevError = error
+        return (const.Kp * error + const.Ki * self.integral + const.Kd * derivative)/180
 
 
 
