@@ -7,25 +7,14 @@ from wpilib.cameraserver import CameraServer
 from wpilib.shuffleboard import Shuffleboard
 from wpilib import SmartDashboard
 import navx
+import constants as const
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
-
-        
-        # Initializes device channels
-        self.XboxController_Channel = Shuffleboard.getTab("Device Ports").add(title="Xbox Controller [USB]", defaultValue=1).getEntry()
-        self.l_joystick_Channel = Shuffleboard.getTab("Device Ports").add(title="Left Controller [USB]", defaultValue=0).getEntry()
-        self.leftDrive_Channel = Shuffleboard.getTab("Device Ports").add(title="Left Motor [CAN]", defaultValue=21).getEntry()
-        self.rightDrive_Channel = Shuffleboard.getTab("Device Ports").add(title="Left Controller [CAN]", defaultValue=22).getEntry()
-        self.frontSensor_Channel = Shuffleboard.getTab("Device Ports").add(title="Front Sensor [DIO]", defaultValue=0).getEntry()
-        self.backSensor_Channel = Shuffleboard.getTab("Device Ports").add(title="Back Sensor [DIO]", defaultValue=1).getEntry()
-        self.gyro_Channel = Shuffleboard.getTab("Device Ports").add(title="Gyro [Analog]", defaultValue=0).getEntry()
-
-        
         
         # Configures CAN Bus Networks to the SparkMax Motor Controllers
-        self.leftDrive = rev.CANSparkMax(self.leftDrive_Channel.getInteger(21), rev.CANSparkLowLevel.MotorType.kBrushed)
-        self.rightDrive = rev.CANSparkMax(self.rightDrive_Channel.getInteger(22), rev.CANSparkLowLevel.MotorType.kBrushed)
+        self.leftDrive = rev.CANSparkMax(const.p_leftDrive, rev.CANSparkLowLevel.MotorType.kBrushed)
+        self.rightDrive = rev.CANSparkMax(const.p_rightDrive, rev.CANSparkLowLevel.MotorType.kBrushed)
         self.robotDrive = wpilib.drive.DifferentialDrive(
             self.leftDrive, self.rightDrive
         )
@@ -36,8 +25,8 @@ class MyRobot(wpilib.TimedRobot):
 
 
         # Sets up the controller channels
-        self.controller = wpilib.XboxController(self.XboxController_Channel.getInteger(1))
-        self.l_joystick = wpilib.Joystick(self.l_joystick_Channel.getInteger(0))
+        self.controller = wpilib.XboxController(const.p_Xbox)
+        self.l_joystick = wpilib.Joystick(const.p_joystick)
         self.timer = wpilib.Timer()
 
 
@@ -46,8 +35,8 @@ class MyRobot(wpilib.TimedRobot):
 
 
         # Creates two DIO objects to represent the front and back sensors on specified channels
-        self.frontSensor = wpilib.Counter(self.frontSensor_Channel.getInteger(0))
-        self.backSensor = wpilib.Counter(self.backSensor_Channel.getInteger(1))
+        self.frontSensor = wpilib.Counter(const.p_frontSensor)
+        self.backSensor = wpilib.Counter(const.p_backSensor)
 
         self.frontSensor.setSemiPeriodMode(True)
         self.backSensor.setSemiPeriodMode(True)
@@ -59,14 +48,9 @@ class MyRobot(wpilib.TimedRobot):
         Shuffleboard.getTab("Sensors").add(self.backSensor)
 
         # Other data to upload to the dashboard under a new Variable Config tab
-        self.clearance = Shuffleboard.getTab("Variable Config").add(title="Sensor Stop Gap", defaultValue=30.0).getEntry()
-        self.speed = Shuffleboard.getTab("Variable Config").add(title="Speed Multiplier", defaultValue=1.0).getEntry()
-    
+        self.clearance = Shuffleboard.getTab("Variable Config").add(title="Sensor Stop Gap", defaultValue=const.clearance).getEntry()
+        self.speed = Shuffleboard.getTab("Variable Config").add(title="Speed Multiplier", defaultValue=const.speed).getEntry()
 
-        # Other data to upload to the dashboard under a new Variable Config tab
-        self.clearance = Shuffleboard.getTab("Variable Config").add(title="Sensor Stop Gap", defaultValue=1.0).getEntry()
-        self.speed = Shuffleboard.getTab("Variable Config").add(title="Speed Multiplier", defaultValue=1.0).getEntry()
-        self.kVoltsPerDegreePerSecond = Shuffleboard.getTab("Variable Config").add(title="Gyro Sensitivity", defaultValue=0.0128).getEntry()
 
         # Initilizes gyro object
         self.gyro = navx.AHRS(wpilib.SerialPort.Port.kUSB1)
@@ -89,9 +73,9 @@ class MyRobot(wpilib.TimedRobot):
 
     def teleopInit(self):
         """This function is called once each time the robot enters teleoperated mode."""
-        self.returnToStraight = wpimath.controller.PIDController(Kp=1, Ki=0.0, Kd=0.0, period=0.02)
-        self.returnToStraight.setSetpoint(0)
-        self.returnToStraight.setTolerance(positionTolerance=1, velocityTolerance=1)
+        self.returnToStraight = wpimath.controller.PIDController(Kp=const.Kp, Ki=const.Ki, Kd=const.Kd, period=const.period)
+        self.returnToStraight.setSetpoint(const.setPoint)
+        self.returnToStraight.setTolerance(positionTolerance=const.posTolerance, velocityTolerance=const.velTolerance)
 
 
     def teleopPeriodic(self):
@@ -101,7 +85,7 @@ class MyRobot(wpilib.TimedRobot):
         turnVal = (self.l_joystick.getX()) ** 3
 
         # Keep the buddy going in a straight line if no turn
-        if abs(self.l_joystick.getX()) < 0.1 and abs(self.l_joystick.getY()) < 0.1 and not self.returnToStraight.atSetpoint():
+        if abs(self.l_joystick.getX()) < const.joyDead and abs(self.l_joystick.getY()) < const.joyDead and not self.returnToStraight.atSetpoint():
             turnVal = self.returnToStraight.calculate(self.gyro.getYaw())
         SmartDashboard.putNumber("Turn Speed", turnVal)
 
