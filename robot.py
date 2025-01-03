@@ -93,7 +93,7 @@ class MyRobot(wpilib.TimedRobot):
         """if abs(self.l_joystick.getX()) < const.joyDead and abs(self.l_joystick.getY()) < const.joyDead and not self.returnToStraight.atSetpoint():
             turnVal = int(self.returnToStraight.calculate(self.gyro.getYaw()))"""
         
-        if abs(self.l_joystick.getX()) < const.joyDead and abs(self.l_joystick.getY()) < const.joyDead and abs(const.setPoint - self.gyro.getYaw()) < const.posTolerance.getFloat(const.D_posTolerance):
+        if abs(self.l_joystick.getX()) < const.joyDead and abs(self.l_joystick.getY()) < const.joyDead and abs(const.setPoint - self.gyro.getYaw()) > const.posTolerance.getFloat(const.D_posTolerance):
             turnVal = self.myPIDControllerCalc(const.setPoint - self.gyro.getYaw(), const.period)
             self.lastTime = self.timer.get()
         else:

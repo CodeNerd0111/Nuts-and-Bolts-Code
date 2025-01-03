@@ -10,10 +10,10 @@ p_frontSensor = 0
 p_backSensor = 1
 
 # Default Gyro PID Constants
-D_Kp = 1.3
-D_Ki = 0.1
-D_Kd = 0.5
-D_posTolerance = 2
+D_Kp = 4.59
+D_Ki = 2.87
+D_Kd = 1.15
+D_posTolerance = .15
 velTolerance = 1
 setPoint = 0
 period = 0.02
